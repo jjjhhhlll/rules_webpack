@@ -83,6 +83,11 @@ See https://webpack.js.org/configuration/""",
         allow_single_file = True,
         mandatory = False,
     ),
+    "extra_outputs": attr.label_list(
+        doc = "Additional output files that should be made part of the target.  (e.g. source maps, license file, etc...)",
+        allow_files = True,
+        mandatory = False,
+    ),
     "_webpack_config_file": attr.label(
         doc = "Internal use only",
         allow_single_file = [".js"],
@@ -158,6 +163,9 @@ def _relpath(ctx, file):
 
 def _impl(ctx):
     output_sources = [getattr(ctx.outputs, o) for o in dir(ctx.outputs)]
+
+    if ctx.attr.extra_outputs:
+        output_sources += [ctx.actions.declare_file(_relpath(ctx, f)) for f in ctx.files.extra_outputs]
 
     # Desugar entrypoints
     entry_points = _desugar_entry_points(ctx.label.name, ctx.attr.entry_point, ctx.attr.entry_points).items()
